@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>ParcelPoint Admin - Dashboard</title>
+  <title>ParcelPoint Admin - Support</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
 </head>
@@ -10,19 +10,113 @@
   <nav class="bg-white p-4 shadow flex justify-between items-center">
     <h1 class="text-xl font-bold text-blue-700">ParcelPoint Admin</h1>
     <div class="space-x-4">
-      <a href="index.html" class="text-blue-700 font-medium">Dashboard</a>
+      <a href="index.html" class="hover:text-blue-500">Dashboard</a>
       <a href="create.html" class="hover:text-blue-500">Create Parcel</a>
-      <a href="support.html" class="hover:text-blue-500">Customer Support</a>
+      <a href="support.html" class="text-blue-700 font-medium">Customer Support</a>
     </div>
   </nav>
 
-  <main class="p-6 max-w-7xl mx-auto">
-    <h2 class="text-3xl font-bold mb-6">📦 Parcel Management</h2>
+  <main class="p-6 max-w-5xl mx-auto">
+    <h2 class="text-2xl font-bold mb-4">🧑‍💬 Customer Messages</h2>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-      <div id="totalParcels" class="bg-blue-700 text-white p-6 rounded shadow">
-        <p>Total Parcels</p>
-        <h3 class="text-3xl font-bold">0</h3>
-      </div>
-      <div id="inTransitParcels" class="bg-yellow-500 text-white p-6 rounded shadow">
-        <p>In Transit</p
+    <div id="messagesContainer" class="bg-white shadow rounded p-4 space-y-4 max-h-[500px] overflow-y-auto">
+      <!-- Messages will load here -->
+    </div>
+
+    <div class="mt-6">
+      <h3 class="font-semibold mb-2">Send New Message</h3>
+      <input id="userEmail" type="email" placeholder="User email" class="w-full p-2 border rounded mb-2" />
+      <textarea id="newMessage" placeholder="Type your message here..." class="w-full p-2 border rounded mb-2" rows="4"></textarea>
+      <button id="sendBtn" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">Send Message</button>
+    </div>
+  </main>
+
+<script>
+  const STORAGE_KEY = 'customerSupportMessages';
+
+  function loadMessages() {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+  }
+
+  function saveMessages(messages) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
+  }
+
+  function renderMessages() {
+    const container = document.getElementById('messagesContainer');
+    container.innerHTML = '';
+    const messages = loadMessages();
+
+    if (messages.length === 0) {
+      container.innerHTML = '<p class="text-gray-500">No messages yet.</p>';
+      return;
+    }
+
+    messages.forEach((msg, i) => {
+      const div = document.createElement('div');
+      div.className = 'border-b pb-4';
+
+      div.innerHTML = `
+        <p><strong>User:</strong> ${msg.email}</p>
+        <p class="mb-2">“${msg.message}”</p>
+        <textarea data-index="${i}" class="w-full border rounded p-2 mb-2" placeholder="Type your reply...">${msg.reply || ''}</textarea>
+        <button data-index="${i}" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 reply-btn">Send Reply</button>
+      `;
+
+      container.appendChild(div);
+    });
+  }
+
+  function sendReply(index) {
+    const messages = loadMessages();
+    const textarea = document.querySelector(`textarea[data-index="${index}"]`);
+    const reply = textarea.value.trim();
+
+    if (!reply) {
+      alert('Reply cannot be empty.');
+      return;
+    }
+
+    messages[index].reply = reply;
+    saveMessages(messages);
+    alert('Reply saved.');
+  }
+
+  function sendMessage() {
+    const emailInput = document.getElementById('userEmail');
+    const messageInput = document.getElementById('newMessage');
+
+    const email = emailInput.value.trim();
+    const message = messageInput.value.trim();
+
+    if (!email || !message) {
+      alert('Please enter both user email and message.');
+      return;
+    }
+
+    const messages = loadMessages();
+    messages.push({ email, message, reply: '' });
+    saveMessages(messages);
+
+    emailInput.value = '';
+    messageInput.value = '';
+
+    renderMessages();
+    alert('Message sent.');
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    renderMessages();
+
+    document.getElementById('sendBtn').addEventListener('click', sendMessage);
+
+    document.getElementById('messagesContainer').addEventListener('click', e => {
+      if (e.target.classList.contains('reply-btn')) {
+        const index = e.target.dataset.index;
+        sendReply(index);
+      }
+    });
+  });
+</script>
+</body>
+  </html>
