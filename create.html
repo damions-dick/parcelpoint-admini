@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>ParcelPoint Admin - Create Parcel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet" />
+</head>
+<body class="bg-gray-100">
+  <nav class="bg-white p-4 shadow flex justify-between items-center">
+    <h1 class="text-xl font-bold text-blue-700">ParcelPoint Admin</h1>
+    <div class="space-x-4">
+      <a href="index.html" class="hover:text-blue-500">Dashboard</a>
+      <a href="create.html" class="text-blue-700 font-medium">Create Parcel</a>
+      <a href="support.html" class="hover:text-blue-500">Customer Support</a>
+    </div>
+  </nav>
+
+  <main class="p-6 max-w-4xl mx-auto bg-white shadow rounded">
+    <h2 class="text-2xl font-bold mb-6">📦 New Parcel Details</h2>
+    <form id="parcelForm" class="space-y-6">
+      <div>
+        <label class="block font-semibold mb-1" for="trackingNumber">Tracking Number</label>
+        <input id="trackingNumber" name="trackingNumber" type="text" class="w-full p-3 border rounded" placeholder="e.g. PP123456789" required />
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+          <h3 class="font-semibold mb-2">Sender Info</h3>
+          <input id="senderName" name="senderName" type="text" class="w-full p-2 border mb-2 rounded" placeholder="Full Name" required />
+          <input id="senderAddress" name="senderAddress" type="text" class="w-full p-2 border mb-2 rounded" placeholder="Address" required />
+          <input id="senderEmail" name="senderEmail" type="email" class="w-full p-2 border mb-2 rounded" placeholder="Email" required />
+          <input id="senderPhone" name="senderPhone" type="tel" class="w-full p-2 border rounded" placeholder="Phone" required />
+        </div>
+        <div>
+          <h3 class="font-semibold mb-2">Receiver Info</h3>
+          <input id="receiverName" name="receiverName" type="text" class="w-full p-2 border mb-2 rounded" placeholder="Full Name" required />
+          <input id="receiverAddress" name="receiverAddress" type="text" class="w-full p-2 border mb-2 rounded" placeholder="Address" required />
+          <input id="receiverEmail" name="receiverEmail" type="email" class="w-full p-2 border mb-2 rounded" placeholder="Email" required />
+          <input id="receiverPhone" name="receiverPhone" type="tel" class="w-full p-2 border rounded" placeholder="Phone" required />
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <input id="fromLocation" name="fromLocation" type="text" class="p-3 border rounded" placeholder="From (City, Country)" required />
+        <input id="toLocation" name="toLocation" type="text" class="p-3 border rounded" placeholder="To (City, Country)" required />
+        <select id="status" name="status" class="p-3 border rounded" required>
+          <option value="" disabled selected>Status</option>
+          <option value="In Transit">In Transit</option>
+          <option value="Delivered">Delivered</option>
+          <option value="On Hold">On Hold</option>
+        </select>
+      </div>
+
+      <div>
+        <label class="block font-semibold mb-1" for="currentLocation">Current Location</label>
+        <input id="currentLocation" name="currentLocation" type="text" class="w-full p-3 border rounded" placeholder="Current parcel location" required />
+      </div>
+
+      <button type="submit" class="bg-blue-700 text-white px-6 py-3 rounded hover:bg-blue-800 transition">Submit Parcel</button>
+    </form>
+  </main>
+
+<script>
+  const form = document.getElementById('parcelForm');
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    // Get form values
+    const parcel = {
+      trackingNumber: form.trackingNumber.value.trim(),
+      senderName: form.senderName.value.trim(),
+      senderAddress: form.senderAddress.value.trim(),
+      senderEmail: form.senderEmail.value.trim(),
+      senderPhone: form.senderPhone.value.trim(),
+      receiverName: form.receiverName.value.trim(),
+      receiverAddress: form.receiverAddress.value.trim(),
+      receiverEmail: form.receiverEmail.value.trim(),
+      receiverPhone: form.receiverPhone.value.trim(),
+      fromLocation: form.fromLocation.value.trim(),
+      toLocation: form.toLocation.value.trim(),
+      status: form.status.value,
+      currentLocation: form.currentLocation.value.trim(),
+    };
+
+    // Load parcels array from localStorage
+    let parcels = JSON.parse(localStorage.getItem('parcels') || '[]');
+
+    // Check duplicate tracking number
+    if(parcels.some(p => p.trackingNumber.toLowerCase() === parcel.trackingNumber.toLowerCase())) {
+      alert('Tracking number already exists.');
+      return;
+    }
+
+    // Add new parcel
+    parcels.push(parcel);
+
+    // Save updated parcels array back to localStorage
+    localStorage.setItem('parcels', JSON.stringify(parcels));
+
+    // Dispatch storage event manually so other tabs update
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'parcels',
+      newValue: JSON.stringify(parcels),
+    }));
+
+    alert('Parcel added successfully!');
+
+    // Reset form
+    form.reset();
+  });
+</script>
+</body>
+</html>
